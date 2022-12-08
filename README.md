@@ -1,6 +1,10 @@
 # JointWallet
-An ether wallet that has two co-owners, both owners can send any amount of ether to the contract and withdraw any amount of ether the contract owns.
+An ether wallet that can have multiple co owners
 
-Owner1 is the only owner that can set a new co-owner besides themself.
+Upon instantiation the wallet only has two, msg.sender and the specified coowner
 
-Owner1 cannot replace themself as an owner
+any owner can send any amount of ether to the contract and withdraw any amount of ether the contract owns.
+
+the initial deployer is the only owner that can set a new co-owner besides themself.
+
+the inital deployer can transfer ownership of the contract to a new owner
