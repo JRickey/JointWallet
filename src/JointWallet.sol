@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 import "solmate/auth/Owned.sol";
+import "solmate/tokens/ERC721.sol";
 
-contract JointWallet is Owned {
+contract JointWallet is Owned, ERC721TokenReceiver{
 
     mapping(address => bool) public approved;
 
