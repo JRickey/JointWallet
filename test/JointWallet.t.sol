@@ -3,10 +3,11 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 import "../src/JointWallet.sol";
+import "../mock/MockERC20.sol";
 
 contract JointWalletTest is Test {
     JointWallet public jointWallet;
-    address private coOwner = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
+    address private coOwner = address(10);
 
     function setUp() public {
         jointWallet = new JointWallet(coOwner);
@@ -46,6 +47,20 @@ contract JointWalletTest is Test {
         jointWallet.removeAddress(address(420));
 
     }
+
+    function testERC20() public{
+        //deposit
+        ERC20 gold = new MockERC20("Gold", "GLD", 12, address(jointWallet), 15);
+        assert(gold.balanceOf(address(jointWallet)) == 15);
+
+        //withdrawal
+        address incorrect = address(1337);
+        vm.prank(incorrect);
+        assert(gold.approve(address(jointWallet),15));
+
+    }
+
+    
 
 
 

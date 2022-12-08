@@ -2,8 +2,10 @@
 pragma solidity ^0.8.13;
 import "solmate/auth/Owned.sol";
 import "solmate/tokens/ERC721.sol";
+import "solmate/tokens/ERC20.sol";
+import "solmate/tokens/ERC1155.sol";
 
-contract JointWallet is Owned, ERC721TokenReceiver{
+contract JointWallet is Owned, ERC721TokenReceiver, ERC1155TokenReceiver{
 
     mapping(address => bool) public approved;
 
@@ -47,5 +49,16 @@ contract JointWallet is Owned, ERC721TokenReceiver{
         addAddress(newCoOwner);
         removeAddress(oldCoOwner);
     }
+
+    function onERC721Received(address, address, uint256, bytes calldata) override external virtual returns (bytes4) {
+        return ERC721TokenReceiver.onERC721Received.selector;
+    }
     
+    function onERC1155Received(address, address, uint256, uint256, bytes calldata) override external virtual returns (bytes4) {
+        return ERC1155TokenReceiver.onERC1155Received.selector;
+    }
+
+    function onERC1155BatchReceived(address, address, uint256[] calldata, uint256[] calldata, bytes calldata) override external virtual returns (bytes4) {
+        return ERC1155TokenReceiver.onERC1155BatchReceived.selector;
+    }
 }
