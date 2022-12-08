@@ -3,22 +3,37 @@ pragma solidity ^0.8.13;
 import "solmate/auth/Owned.sol";
 
 contract JointWallet is Owned {
-    address payable public owner2;
+
+    mapping(address => bool) public approved;
 
     constructor(address coOwner) Owned(msg.sender) {
-        owner2 = payable(coOwner);
+        addAddress(msg.sender);
+        addAddress(coOwner);
+    }
+    modifier isApproved() {
+        require(approved[msg.sender] == true, "UNAUTHORIZED");
+
+        _;
+    }
+    
+    function addAddress(address _address) public onlyOwner{
+        approved[_address] = true;
     }
 
-    receive() external payable {
-        require(msg.sender == owner || msg.sender == owner2, "Caller is not authorized to deposit");
+    function removeAddress(address _address) public onlyOwner{
+        delete approved[_address];
     }
 
-    fallback() external payable {
-        require(msg.sender == owner || msg.sender == owner2, "Caller is not authorized to deposit");
+    receive() external payable isApproved{
+
+    }
+
+    fallback() external payable isApproved{
+
     }
 
     function withdraw(uint _amount) external {
-        require(msg.sender == owner || msg.sender == owner2, "caller is not authorized to withdraw");
+        require(approved[msg.sender] == true, "caller is not authorized to withdraw");
         (bool sent, bytes memory data) = msg.sender.call{value: _amount}("");
         require(sent == true);
     }
@@ -27,8 +42,9 @@ contract JointWallet is Owned {
         return address(this).balance;
     }
 
-    function setNewCoOwner(address newCoOwner) external onlyOwner {
-        owner2 = payable(newCoOwner);
+    function swapOwner(address newCoOwner, address oldCoOwner) external onlyOwner {
+        addAddress(newCoOwner);
+        removeAddress(oldCoOwner);
     }
     
 }

@@ -38,10 +38,13 @@ contract JointWalletTest is Test {
     function testSetNewCoOwner() public {
         vm.prank(coOwner);
         vm.expectRevert("UNAUTHORIZED");
-        jointWallet.setNewCoOwner(address(1337));
+        jointWallet.addAddress(address(1337));
 
-        jointWallet.setNewCoOwner(address(420));
-        assert(jointWallet.owner2() == address(420));
+        jointWallet.addAddress(address(420));
+        vm.prank(coOwner);
+        vm.expectRevert("UNAUTHORIZED");
+        jointWallet.removeAddress(address(420));
+
     }
 
 
