@@ -35,10 +35,22 @@ contract JointWallet is Owned, ERC721TokenReceiver, ERC1155TokenReceiver{
 
     }
 
-    function withdraw(uint _amount) external {
-        require(approved[msg.sender] == true, "caller is not authorized to withdraw");
+    function withdrawEther(uint _amount) external {
+        require(approved[msg.sender] == true, "caller is not authorized to withdraw ether");
         (bool sent, bytes memory data) = msg.sender.call{value: _amount}("");
         require(sent == true);
+    }
+
+    function withdrawERC721(ERC721 _ERC721, uint id) public {
+        require(approved[msg.sender] == true, "caller is not authorized to withdraw ERC721");
+        _ERC721.approve(address(this), id);
+        _ERC721.safeTransferFrom(address(this), msg.sender, id);
+    }
+
+    function withdrawERC20(ERC20 _ERC20, uint _amount) public {
+        require(approved[msg.sender] == true, "caller is not authorized to withdraw ERC20");
+        _ERC20.approve(address(this), _amount);
+        _ERC20.transferFrom(address(this), msg.sender, _amount);
     }
 
     function getBalance() external view returns (uint) {

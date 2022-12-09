@@ -5,6 +5,7 @@ import "forge-std/Test.sol";
 import "../src/JointWallet.sol";
 import "../mock/MockERC20.sol";
 
+
 contract JointWalletTest is Test {
     JointWallet public jointWallet;
     address private coOwner = address(10);
@@ -32,8 +33,8 @@ contract JointWalletTest is Test {
         address incorrect = address(1337);
         vm.deal(incorrect, 1 ether);
         vm.prank(incorrect);
-        vm.expectRevert("caller is not authorized to withdraw");
-        jointWallet.withdraw(10 ether);        
+        vm.expectRevert("caller is not authorized to withdraw ether");
+        jointWallet.withdrawEther(10 ether);        
     }
 
     function testSetNewCoOwner() public {
@@ -48,17 +49,30 @@ contract JointWalletTest is Test {
 
     }
 
-    function testERC20() public{
+    function testERC20Authorization() public{
         //deposit
-        ERC20 gold = new MockERC20("Gold", "GLD", 12, address(jointWallet), 15);
-        assert(gold.balanceOf(address(jointWallet)) == 15);
+        ERC20 gold = new MockERC20("Gold", "GLD", 18, address(jointWallet), 100);
+        assert(gold.balanceOf(address(jointWallet)) == 100);
 
         //withdrawal
         address incorrect = address(1337);
         vm.prank(incorrect);
-        assert(gold.approve(address(jointWallet),15));
-
+        vm.expectRevert("caller is not authorized to withdraw ERC20");
+        jointWallet.withdrawERC20(gold, 10);
     }
+
+    function testERC20Withdrawal() public{
+        //deposit
+        ERC20 gold = new MockERC20("Gold", "GLD", 18, address(jointWallet), 100);
+        jointWallet.withdrawERC20(gold, 10);
+        assert(gold.balanceOf(address(this)) == 10);
+    }
+
+    // function testERC721Withdrawal() public {
+    //     ERC721 foo = new MockERC721(address(this));
+    //     jointWallet.withdrawERC721(foo, 1);
+    //     assert(foo.balanceOf(address(this) == 1));
+    // }
 
     
 
