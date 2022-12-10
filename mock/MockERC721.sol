@@ -5,7 +5,7 @@ import "lib/@openzeppelin/contracts/access/Ownable.sol";
 import "lib/@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "lib/@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 
-contract MockNFT is ERC721, ERC721Enumerable, Ownable {
+contract MockERC721 is ERC721, ERC721Enumerable, Ownable {
     constructor(address to) ERC721("MockNFT", "MNFT") {
         _safeMint(to, 1);
         _safeMint(to, 2);
@@ -31,9 +31,10 @@ contract MockNFT is ERC721, ERC721Enumerable, Ownable {
     function _beforeTokenTransfer(
         address from,
         address to,
-        uint256 tokenId
+        uint256 tokenId,
+        uint256 batchSize
     ) internal override(ERC721, ERC721Enumerable) {
-        super._beforeTokenTransfer(from, to, tokenId);
+        super._beforeTokenTransfer(from, to, tokenId, batchSize);
     }
 
     function supportsInterface(bytes4 interfaceId)

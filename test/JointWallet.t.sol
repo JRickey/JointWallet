@@ -2,11 +2,15 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
+import "forge-std/console2.sol";
 import "../src/JointWallet.sol";
 import "../mock/MockERC20.sol";
-
+import "../mock/MockERC721.sol";
+import "../mock/MockERC1155.sol";
 
 contract JointWalletTest is Test {
+
+
     JointWallet public jointWallet;
     address private coOwner = address(10);
 
@@ -68,11 +72,41 @@ contract JointWalletTest is Test {
         assert(gold.balanceOf(address(this)) == 10);
     }
 
-    // function testERC721Withdrawal() public {
-    //     ERC721 foo = new MockERC721(address(this));
-    //     jointWallet.withdrawERC721(foo, 1);
-    //     assert(foo.balanceOf(address(this) == 1));
-    // }
+    function testERC721Authorization(address rand) public {
+        //deposit
+        //emit log_address(rand);
+        //console2.logBool(jointWallet.approved(rand));
+        vm.assume(rand != address(this));
+        vm.assume(rand != address(10));
+        ERC721 foo = new MockERC721(address(jointWallet));
+        vm.startPrank(rand);
+        vm.expectRevert("caller is not authorized to withdraw ERC721");
+        jointWallet.withdrawERC721(foo, 1);
+    }
+
+    function testERC721Withdrawal() public {
+        ERC721 foo = new MockERC721(address(jointWallet));
+        vm.prank(address(10));
+        jointWallet.withdrawERC721(foo, 1);
+        assert(foo.balanceOf(address(10)) == 1);
+    }
+
+    function testERC1155Authorization(address rand) public {
+        //deposit
+        vm.assume(rand != address(this));
+        vm.assume(rand != address(10));
+        ERC1155 foo = new MockERC1155(address(jointWallet));
+        vm.startPrank(rand);
+        vm.expectRevert("caller is not authorized to withdraw ERC1155");
+        jointWallet.withdrawERC1155(foo, 0, 1);
+    }
+
+    function testERC1155Withdrawal() public {
+        ERC1155 foo = new MockERC1155(address(jointWallet));
+        vm.prank(address(10));
+        jointWallet.withdrawERC1155(foo, 0, 1);
+        assert(foo.balanceOf(address(10), 0) == 1);
+    }
 
     
 

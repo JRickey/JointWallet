@@ -1,11 +1,15 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 import "solmate/auth/Owned.sol";
-import "solmate/tokens/ERC721.sol";
+import "lib/@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "lib/@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "solmate/tokens/ERC20.sol";
-import "solmate/tokens/ERC1155.sol";
+import "lib/@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
+import "lib/@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
+import "lib/@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-contract JointWallet is Owned, ERC721TokenReceiver, ERC1155TokenReceiver{
+
+contract JointWallet is Owned, IERC721Receiver, IERC1155Receiver{
 
     mapping(address => bool) public approved;
 
@@ -41,16 +45,19 @@ contract JointWallet is Owned, ERC721TokenReceiver, ERC1155TokenReceiver{
         require(sent == true);
     }
 
-    function withdrawERC721(ERC721 _ERC721, uint id) public {
+    function withdrawERC721(IERC721 _ERC721, uint id) public {
         require(approved[msg.sender] == true, "caller is not authorized to withdraw ERC721");
-        _ERC721.approve(address(this), id);
-        _ERC721.safeTransferFrom(address(this), msg.sender, id);
+        _ERC721.transferFrom(address(this), msg.sender, id);
     }
 
     function withdrawERC20(ERC20 _ERC20, uint _amount) public {
         require(approved[msg.sender] == true, "caller is not authorized to withdraw ERC20");
-        _ERC20.approve(address(this), _amount);
-        _ERC20.transferFrom(address(this), msg.sender, _amount);
+        _ERC20.transfer(msg.sender, _amount);
+    }
+
+    function withdrawERC1155(IERC1155 _ERC1155, uint256 _tokenID, uint256 _amount) public {
+        require(approved[msg.sender] == true, "caller is not authorized to withdraw ERC1155");
+        _ERC1155.safeTransferFrom(address(this), msg.sender, _tokenID, _amount, "0x01");
     }
 
     function getBalance() external view returns (uint) {
@@ -63,14 +70,18 @@ contract JointWallet is Owned, ERC721TokenReceiver, ERC1155TokenReceiver{
     }
 
     function onERC721Received(address, address, uint256, bytes calldata) override external virtual returns (bytes4) {
-        return ERC721TokenReceiver.onERC721Received.selector;
+        return IERC721Receiver.onERC721Received.selector;
     }
     
     function onERC1155Received(address, address, uint256, uint256, bytes calldata) override external virtual returns (bytes4) {
-        return ERC1155TokenReceiver.onERC1155Received.selector;
+        return IERC1155Receiver.onERC1155Received.selector;
     }
 
     function onERC1155BatchReceived(address, address, uint256[] calldata, uint256[] calldata, bytes calldata) override external virtual returns (bytes4) {
-        return ERC1155TokenReceiver.onERC1155BatchReceived.selector;
+        return IERC1155Receiver.onERC1155BatchReceived.selector;
+    }
+
+    function supportsInterface(bytes4 interfaceId) public view virtual returns (bool) {
+        return false;
     }
 }
