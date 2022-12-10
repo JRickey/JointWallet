@@ -107,10 +107,4 @@ contract JointWalletTest is Test {
         jointWallet.withdrawERC1155(foo, 0, 1);
         assert(foo.balanceOf(address(10), 0) == 1);
     }
-
-    
-
-
-
-    
 }
